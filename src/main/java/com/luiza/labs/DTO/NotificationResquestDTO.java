@@ -9,4 +9,5 @@ public class NotificationResquestDTO {
     private String dataEnvio;
     private DestinatarioDTO destinatario;
     private String mensagem;
+    private String tipoComunicacao;
 }
