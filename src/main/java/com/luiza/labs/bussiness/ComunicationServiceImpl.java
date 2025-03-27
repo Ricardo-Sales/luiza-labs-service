@@ -9,8 +9,10 @@ import com.luiza.labs.mappers.ComunicationMapper;
 import com.luiza.labs.repository.ComunicationRepository;
 import jakarta.transaction.Transactional;
 import org.apache.coyote.BadRequestException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -26,8 +28,14 @@ public class ComunicationServiceImpl implements ComunicationService {
 
     @Autowired
     private ComunicationRepository comunicationRepository;
+    private static final Logger logger = LoggerFactory.getLogger(ComunicationServiceImpl.class);
 
     public void saveComunication(ComunicationResquestDTO comunication) throws BadRequestException {
+
+        logger.info(String.format("Saving Comunication >> Message: %s", comunication.getMensagem()));
+
+
+
         validateComunicationRequest(comunication);
         comunication.setCreatedAt(LocalDateTime.now());
         ComunicationEntity notificationEntity = ComunicationMapper.toEntity(null, comunication);
@@ -35,6 +43,8 @@ public class ComunicationServiceImpl implements ComunicationService {
     }
 
     public void updateComunication(Long notificationId, ComunicationResquestDTO comunication) throws BadRequestException {
+        logger.info(String.format("Updating comunication >>  id: %s", notificationId));
+
         validateComunicationRequest(comunication);
         comunication.setUpdatedAt(LocalDateTime.now());
         ComunicationEntity notificationEntity = ComunicationMapper.toEntity(notificationId, comunication);
@@ -59,6 +69,7 @@ public class ComunicationServiceImpl implements ComunicationService {
 
     @Override
     public void deleteComunication(Long notificationId) {
+        logger.info(String.format("Deleting comunication >> id: %s", notificationId));
         comunicationRepository.deleteById(notificationId);
     }
 
@@ -78,7 +89,7 @@ public class ComunicationServiceImpl implements ComunicationService {
         }
 
         if(comunication.equals(ComunicationTypeEnum.EMAIL.description) &&
-                (comunication.getDestinatario().getEmail() == null || comunication.getDestinatario().getEmail().equals(""))){
+                (comunication.getDestinatario().getEmail() == null || comunication.getDestinatario().getEmail().isEmpty())){
             throw new BadRequestException("telefone is mandatory for WHATSAPP comunication.");
         }
 

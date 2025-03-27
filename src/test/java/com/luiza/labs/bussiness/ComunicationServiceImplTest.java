@@ -2,18 +2,20 @@ package com.luiza.labs.bussiness;
 
 import com.luiza.labs.DTO.ComunicationResquestDTO;
 import com.luiza.labs.entity.ComunicationEntity;
+import com.luiza.labs.mappers.ComunicationMapper;
 import com.luiza.labs.repository.ComunicationRepository;
 import org.apache.coyote.BadRequestException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
 
@@ -21,17 +23,26 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @Service
-@ExtendWith(MockitoExtension.class)
+@RunWith(MockitoJUnitRunner.class)
+@ActiveProfiles("test")
 class ComunicationServiceImplTest{
 
     @Mock
     ComunicationRepository comunicationRepository;
 
     @Mock
+    private ComunicationResquestDTO comunicationResquestDTO;
+
+    @Mock
 
     @InjectMocks
     @Autowired
     ComunicationServiceImpl comunicationServiceImpl;
+
+    public ComunicationServiceImplTest(ComunicationRepository comunicationRepository, ComunicationServiceImpl comunicationServiceImpl) {
+        this.comunicationRepository = comunicationRepository;
+        this.comunicationServiceImpl = comunicationServiceImpl;
+    }
 
 
     private ComunicationResquestDTO mockComunicationResquestDTO(){
@@ -61,13 +72,15 @@ class ComunicationServiceImplTest{
     }
 
     @Test
-    void saveComunication() throws BadRequestException {
-        ComunicationResquestDTO mockComunication = mockComunicationResquestDTO();
-        doNothing().when(comunicationRepository.save(mockComunicationEntity()));
+    void saveComunication(ComunicationResquestDTO comunication) throws BadRequestException {
+        ComunicationServiceImpl comunicationService = new ComunicationServiceImpl();
+//        ComunicationResquestDTO mockComunication = mockComunicationResquestDTO();
+        ComunicationEntity comunicationEntity = ComunicationMapper.toEntity(null, comunication);
+        doNothing().when(comunicationRepository.save(any()));
 
-        comunicationServiceImpl.saveComunication(mockComunication);
+        comunicationService.saveComunication(comunication);
 
-        Assertions.assertNotNull(mockComunication.getDestinatario());
+        Assertions.assertNotNull(comunication.getDestinatario());
         verify(comunicationRepository, times(1)).save(any());
     }
 
