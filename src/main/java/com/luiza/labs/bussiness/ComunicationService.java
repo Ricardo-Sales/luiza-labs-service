@@ -1,20 +1,22 @@
 package com.luiza.labs.bussiness;
 
-import com.luiza.labs.DTO.NotificationResquestDTO;
+import com.luiza.labs.DTO.ComunicationResponseDTO;
+import com.luiza.labs.DTO.ComunicationResquestDTO;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
 public interface ComunicationService {
 
-    ResponseEntity<?> sendNotification(NotificationResquestDTO notification);
+    void saveComunication(ComunicationResquestDTO notification) throws BadRequestException;
 
-    ResponseEntity<?> updateNotification(Long notificationId, NotificationResquestDTO notification);
+    void updateComunication(Long notificationId, ComunicationResquestDTO notification) throws BadRequestException;
 
-    ResponseEntity<?> findNotification(Long notificationId);
+    ComunicationResponseDTO findNotification(Long notificationId);
 
-    ResponseEntity<List<?>> findAllNotification();
+    List<ComunicationResponseDTO> findAllComunication();
 
-    ResponseEntity<?> deleteNotification(Long notificationId);
+    void deleteComunication(Long notificationId);
 
 }
