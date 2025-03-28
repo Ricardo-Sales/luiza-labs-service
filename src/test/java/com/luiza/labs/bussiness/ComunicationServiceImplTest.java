@@ -1,56 +1,49 @@
 package com.luiza.labs.bussiness;
 
+
 import com.luiza.labs.DTO.ComunicationResquestDTO;
+import com.luiza.labs.DTO.DestinatarioDTO;
 import com.luiza.labs.entity.ComunicationEntity;
-import com.luiza.labs.mappers.ComunicationMapper;
 import com.luiza.labs.repository.ComunicationRepository;
 import org.apache.coyote.BadRequestException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
 
 @Service
-@RunWith(MockitoJUnitRunner.class)
-@ActiveProfiles("test")
-class ComunicationServiceImplTest{
+public class ComunicationServiceImplTest{
 
     @Mock
     ComunicationRepository comunicationRepository;
-
-    @Mock
-    private ComunicationResquestDTO comunicationResquestDTO;
-
-    @Mock
 
     @InjectMocks
     @Autowired
     ComunicationServiceImpl comunicationServiceImpl;
 
-    public ComunicationServiceImplTest(ComunicationRepository comunicationRepository, ComunicationServiceImpl comunicationServiceImpl) {
-        this.comunicationRepository = comunicationRepository;
-        this.comunicationServiceImpl = comunicationServiceImpl;
-    }
-
-
     private ComunicationResquestDTO mockComunicationResquestDTO(){
         ComunicationResquestDTO comunicationResquestDTO = new ComunicationResquestDTO();
+        DestinatarioDTO destinatarioDTO = new DestinatarioDTO(
+                "teste",
+                "teste@teste.com",
+                "11123456789"
+        );
+
         comunicationResquestDTO.setDataEnvio(LocalDateTime.now());
-        comunicationResquestDTO.getDestinatario().setNome("teste");
-        comunicationResquestDTO.getDestinatario().setEmail("teste@teste.com");
-        comunicationResquestDTO.getDestinatario().setTelefone("11123456789");
+        comunicationResquestDTO.setDestinatario(destinatarioDTO);
         comunicationResquestDTO.setMensagem("Teste de mensagem");
         comunicationResquestDTO.setTipoComunicacao("SMS");
         return comunicationResquestDTO;
@@ -68,20 +61,35 @@ class ComunicationServiceImplTest{
 
     @BeforeEach
     void setup(){
-        MockitoAnnotations.openMocks(this);
+        MockitoAnnotations.initMocks(this);
     }
 
     @Test
-    void saveComunication(ComunicationResquestDTO comunication) throws BadRequestException {
-        ComunicationServiceImpl comunicationService = new ComunicationServiceImpl();
-//        ComunicationResquestDTO mockComunication = mockComunicationResquestDTO();
-        ComunicationEntity comunicationEntity = ComunicationMapper.toEntity(null, comunication);
-        doNothing().when(comunicationRepository.save(any()));
+    public void saveComunicationSuccess() throws BadRequestException {
+        ComunicationResquestDTO mockComunication = mockComunicationResquestDTO();
 
-        comunicationService.saveComunication(comunication);
+        when(comunicationRepository.save(any())).thenReturn(mockComunicationEntity());
 
-        Assertions.assertNotNull(comunication.getDestinatario());
-        verify(comunicationRepository, times(1)).save(any());
+        comunicationServiceImpl.saveComunication(mockComunication);
+
+        Assertions.assertNotNull(mockComunication.getDestinatario());
+        Mockito.verify(comunicationRepository, times(1)).save(any());
     }
+
+    @Test
+    public void saveComunicationBadRequestTelefone() {
+        ComunicationResquestDTO mockComunication = mockComunicationResquestDTO();
+        mockComunication.getDestinatario().setTelefone("");
+
+        when(comunicationRepository.save(any())).thenReturn(mockComunicationEntity());
+
+        final BadRequestException errorMessage = assertThrows(BadRequestException.class,
+                ()-> comunicationServiceImpl.saveComunication(mockComunication));
+
+        assertEquals(BadRequestException.class, errorMessage.getClass());
+        assertEquals("telefone must be 11 characters like 11123456789.", errorMessage.getMessage());
+        Mockito.verify(comunicationRepository, times(0)).save(any());
+    }
+
 
 }

@@ -26,9 +26,10 @@ import static com.luiza.labs.enums.ComunicationTypeEnum.getComunicationType;
 @Transactional
 public class ComunicationServiceImpl implements ComunicationService {
 
+    private static final Logger logger = LoggerFactory.getLogger(ComunicationServiceImpl.class);
+
     @Autowired
     private ComunicationRepository comunicationRepository;
-    private static final Logger logger = LoggerFactory.getLogger(ComunicationServiceImpl.class);
 
     public void saveComunication(ComunicationResquestDTO comunication) throws BadRequestException {
 
